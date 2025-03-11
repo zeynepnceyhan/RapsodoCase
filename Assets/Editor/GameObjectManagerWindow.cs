@@ -10,8 +10,6 @@ public class GameObjectManagerWindow : EditorWindow
     private bool showOnlyWithMeshRenderer = false;
     private bool showOnlyWithCollider = false;
     private bool showOnlyWithRigidbody = false;
-    private System.Type componentToAdd;
-    private System.Type componentToRemove;
 
     [MenuItem("Tools/GameObject Manager")]
     public static void ShowWindow()
@@ -35,6 +33,7 @@ public class GameObjectManagerWindow : EditorWindow
         LoadGameObjects();
         Repaint();
     }
+
     private void LoadGameObjects()
     {
         gameObjects = FindObjectsOfType<GameObject>().Where(go =>
@@ -43,7 +42,7 @@ public class GameObjectManagerWindow : EditorWindow
             (!showOnlyWithRigidbody || go.GetComponent<Rigidbody>() != null) &&
             (string.IsNullOrEmpty(searchQuery) || go.name.ToLower().Contains(searchQuery.ToLower()))
         ).ToList();
-        Repaint(); // Listeyi anında güncelle
+        Repaint();
     }
 
     private void OnGUI()
@@ -61,6 +60,20 @@ public class GameObjectManagerWindow : EditorWindow
             Repaint();
         }
 
+        // Undo ve Redo Butonları
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("Undo", GUILayout.Width(100)))
+        {
+            Undo.PerformUndo(); // Undo işlemi
+        }
+
+        if (GUILayout.Button("Redo", GUILayout.Width(100)))
+        {
+            Undo.PerformRedo(); // Redo işlemi
+        }
+        EditorGUILayout.EndHorizontal();
+
+        // GameObject Listesi
         foreach (var go in gameObjects)
         {
             if (!string.IsNullOrEmpty(searchQuery) && !go.name.ToLower().Contains(searchQuery.ToLower()))
@@ -86,17 +99,27 @@ public class GameObjectManagerWindow : EditorWindow
             EditorGUILayout.EndHorizontal();
         }
 
+        // Seçilen GameObject'i düzenlemek
         if (Selection.activeGameObject != null)
         {
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Edit Selected GameObject", EditorStyles.boldLabel);
             GameObject selectedGO = Selection.activeGameObject;
+
+            // Position değişikliği için Undo desteği
             Undo.RecordObject(selectedGO.transform, "Transform Change");
             selectedGO.transform.position = EditorGUILayout.Vector3Field("Position", selectedGO.transform.position);
+
+            // Rotation değişikliği için Undo desteği
+            Undo.RecordObject(selectedGO.transform, "Transform Change");
             selectedGO.transform.rotation = Quaternion.Euler(EditorGUILayout.Vector3Field("Rotation", selectedGO.transform.rotation.eulerAngles));
+
+            // Scale değişikliği için Undo desteği
+            Undo.RecordObject(selectedGO.transform, "Transform Change");
             selectedGO.transform.localScale = EditorGUILayout.Vector3Field("Scale", selectedGO.transform.localScale);
         }
 
+        // Birden fazla GameObject seçili olduğunda, toplu düzenleme
         if (Selection.objects.Length > 1)
         {
             EditorGUILayout.Space();
@@ -120,10 +143,10 @@ public class GameObjectManagerWindow : EditorWindow
             }
         }
 
+        // Bileşen Ekleme ve Kaldırma
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("Batch Component Management", EditorStyles.boldLabel);
 
-// Bileşen ekleme
         MonoScript addScript = EditorGUILayout.ObjectField("Component to Add", null, typeof(MonoScript), false) as MonoScript;
         if (addScript != null)
         {
@@ -144,7 +167,7 @@ public class GameObjectManagerWindow : EditorWindow
             }
         }
 
-// Bileşen kaldırma
+        // Bileşen Kaldırma
         MonoScript removeScript = EditorGUILayout.ObjectField("Component to Remove", null, typeof(MonoScript), false) as MonoScript;
         if (removeScript != null)
         {
@@ -164,6 +187,5 @@ public class GameObjectManagerWindow : EditorWindow
                 }
             }
         }
-
     }
 }
