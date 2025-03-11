@@ -22,11 +22,28 @@ public class GameObjectManagerWindow : EditorWindow
     private void OnEnable()
     {
         LoadGameObjects();
+        Selection.selectionChanged += OnSelectionChanged;
     }
 
+    private void OnDisable()
+    {
+        Selection.selectionChanged -= OnSelectionChanged;
+    }
+
+    private void OnSelectionChanged()
+    {
+        LoadGameObjects();
+        Repaint();
+    }
     private void LoadGameObjects()
     {
-        gameObjects = FindObjectsOfType<GameObject>().ToList();
+        gameObjects = FindObjectsOfType<GameObject>().Where(go =>
+            (!showOnlyWithMeshRenderer || go.GetComponent<MeshRenderer>() != null) &&
+            (!showOnlyWithCollider || go.GetComponent<Collider>() != null) &&
+            (!showOnlyWithRigidbody || go.GetComponent<Rigidbody>() != null) &&
+            (string.IsNullOrEmpty(searchQuery) || go.name.ToLower().Contains(searchQuery.ToLower()))
+        ).ToList();
+        Repaint(); // Listeyi anında güncelle
     }
 
     private void OnGUI()
@@ -41,6 +58,7 @@ public class GameObjectManagerWindow : EditorWindow
         if (GUILayout.Button("Refresh"))
         {
             LoadGameObjects();
+            Repaint();
         }
 
         foreach (var go in gameObjects)
@@ -110,7 +128,11 @@ public class GameObjectManagerWindow : EditorWindow
         if (addScript != null)
         {
             System.Type addType = addScript.GetClass();
-            if (addType != null && GUILayout.Button("Add to Selected"))
+            if (addType == null)
+            {
+                EditorGUILayout.HelpBox("Invalid script selected!", MessageType.Warning);
+            }
+            else if (GUILayout.Button("Add to Selected"))
             {
                 foreach (var obj in Selection.objects)
                 {
