@@ -1,64 +1,58 @@
 using UnityEngine;
+using UnityEditor;
 
-public class SceneSetup : MonoBehaviour
+public class SceneSetup : EditorWindow
 {
-    void Start()
+    [MenuItem("Tools/Setup Scene")]
+    public static void SetupScene()
     {
-        CreateGameObjects();
-    }
-
-    void CreateGameObjects()
-    {
-        // 1. 5 Cube with MeshRenderer
         for (int i = 0; i < 5; i++)
         {
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cube.name = "Cube_MeshRenderer_" + i;
+            cube.name = "Cube_Mesh_" + i;
+            cube.AddComponent<MeshRenderer>();
         }
 
-        // 2. 5 Cube with BoxCollider
         for (int i = 0; i < 5; i++)
         {
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cube.name = "Cube_BoxCollider_" + i;
-            DestroyImmediate(cube.GetComponent<MeshRenderer>());
+            cube.name = "Cube_Collider_" + i;
+            cube.AddComponent<BoxCollider>();
         }
 
-        // 3. 5 GameObjects with Rigidbody
         for (int i = 0; i < 5; i++)
         {
-            GameObject obj = new GameObject("GameObject_Rigidbody_" + i);
+            GameObject obj = new GameObject("RigidbodyObj_" + i);
             obj.AddComponent<Rigidbody>();
         }
 
-        // 4. 5 Sphere with MeshRenderer and SphereCollider
         for (int i = 0; i < 5; i++)
         {
             GameObject sphere = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            sphere.name = "Sphere_MeshRenderer_Collider_" + i;
+            sphere.name = "Sphere_" + i;
+            sphere.AddComponent<SphereCollider>();
+            sphere.AddComponent<MeshRenderer>();
         }
 
-        // 5. 5 GameObjects with Collider, Rigidbody, and MeshRenderer
         for (int i = 0; i < 5; i++)
         {
-            GameObject obj = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            obj.name = "GameObject_Collider_Rigidbody_MeshRenderer_" + i;
+            GameObject obj = new GameObject("ComplexObj_" + i);
+            obj.AddComponent<BoxCollider>();
+            obj.AddComponent<MeshRenderer>();
             obj.AddComponent<Rigidbody>();
         }
 
-        // 6. 5 Inactive GameObjects
         for (int i = 0; i < 5; i++)
         {
-            GameObject obj = new GameObject("InactiveGameObject_" + i);
+            GameObject obj = new GameObject("InactiveObj_" + i);
             obj.SetActive(false);
         }
 
-        // 7. 5 GameObjects with only Transform
         for (int i = 0; i < 5; i++)
         {
-            GameObject obj = new GameObject("EmptyGameObject_" + i);
+            GameObject obj = new GameObject("TransformOnly_" + i);
         }
 
-        Debug.Log("Scene setup completed!");
+        Debug.Log("Scene setup completed.");
     }
 }
